@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ESP32 OTA Server</title>
+    <script>
+        function startUpload() {
+            var otafile = document.getElementById("file").files;
+            if (otafile.length == 0) {
+                alert("No file selected!");
+            } else {
+                document.getElementById("file").disabled = true;
+                document.getElementById("upload").disabled = true;
+                var file = otafile[0];
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState == 4) {
+                        if (xhr.status == 200) {
+                            document.open();
+                            document.write(xhr.responseText);
+                            document.close();
+                        } else if (xhr.status == 0) {
+                            alert("Server closed the connection abruptly!");
+                            location.reload()
+                        } else {
+                            alert(xhr.status + " Error!\n" + xhr.responseText);
+                            location.reload()
+                        }
+                    }
+                };
+                xhr.open("POST", "/zh_ota_server", true);
+                xhr.send(file);
+            }
+        }
+    </script>
+    <style>
+        body {
+            max-width: 360px;
+            text-align: center;
+        }
+
+        .button {
+            border: none;
+            display: block;
+            width: 90%;
+            background: #3df;
+            padding: 30px;
+            color: #FFF;
+            font-size: 26px;
+            font-weight: bold;
+            font-family: Tahoma;
+            border-radius: 10px;
+        }
+
+        .button:hover {
+            background: #3ce;
+        }
+
+        .button div {
+            color: #FFF;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>ESP32 OTA Server</h1>
+    <div>
+        <label for="file" class="button">Firmware file:<div></div></label>
+        <input type="file" accept=".bin" name="upload" id="file" hidden="true"
+            onchange='document.querySelector(".button div").innerHTML = Array.from(this.files).map(f => f.name).join("<br />")' />
+        <p></p>
+        <button style="width:107%" id="upload" type="button" class="button" onclick="startUpload()">Upload</button>
+    </div>
+</body>
+
+</html>
