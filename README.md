@@ -25,7 +25,7 @@ In the application, add the component:
 
 ## Example
 
-OTA server by address http://192.168.4.1/ota
+OTA server by address <http://192.168.4.1/ota>
 
 ```c
 #include "nvs_flash.h"
