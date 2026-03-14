@@ -41,6 +41,7 @@ esp_err_t zh_ota_server_init(httpd_handle_t server, const char *path)
     ZH_LOGI("OTA server initialization started.");
     ZH_ERROR_CHECK(server != NULL && path != NULL, ESP_ERR_INVALID_ARG, NULL, "OTA server initialization failed. Invalid argument.");
     _ota_path = (char *)heap_caps_calloc(1, strlen(path), MALLOC_CAP_8BIT);
+    ZH_ERROR_CHECK(_ota_path != NULL, ESP_ERR_NO_MEM, NULL, "OTA server initialization failed. Memory allocation fail or no free memory in the heap.");
     strcpy(_ota_path, path);
     _ota_page.uri = _ota_path;
     _ota_page_ws.uri = _ota_ws_path;
