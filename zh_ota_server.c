@@ -45,18 +45,15 @@ esp_err_t zh_ota_server_init(httpd_handle_t server, const char *path)
     strcpy(_ota_path, path);
     _ota_page.uri = _ota_path;
     _ota_page_ws.uri = _ota_ws_path;
-    esp_err_t err = httpd_register_uri_handler(server, &_ota_page);
-    ZH_ERROR_CHECK(err == ESP_OK, err, NULL, "OTA server initialization failed. Register uri handler failed.");
-    err = httpd_register_uri_handler(server, &_ota_page_ws);
-    ZH_ERROR_CHECK(err == ESP_OK, err, NULL, "OTA server initialization failed. Register uri handler failed.");
+    ZH_ERROR_CHECK(httpd_register_uri_handler(server, &_ota_page) == ESP_OK, ESP_FAIL, NULL, "OTA server initialization failed. Register uri handler failed.");
+    ZH_ERROR_CHECK(httpd_register_uri_handler(server, &_ota_page_ws) == ESP_OK, ESP_FAIL, NULL, "OTA server initialization failed. Register uri handler failed.");
     ZH_LOGI("OTA server initialization completed successfully.");
     return ESP_OK;
 }
 
 esp_err_t _ota_page_handler(httpd_req_t *req)
 {
-    esp_err_t err = httpd_resp_send(req, (const char *)zh_ota_server_html_start, zh_ota_server_html_end - zh_ota_server_html_start);
-    ZH_ERROR_CHECK(err == ESP_OK, err, NULL, "HTTP server internal error.");
+    ZH_ERROR_CHECK(httpd_resp_send(req, (const char *)zh_ota_server_html_start, zh_ota_server_html_end - zh_ota_server_html_start) == ESP_OK, ESP_FAIL, NULL, "HTTP server internal error.");
     return ESP_OK;
 }
 
@@ -67,8 +64,7 @@ esp_err_t _ota_ws_page_handler(httpd_req_t *req) // -V2008
     int remaining = req->content_len;
     const esp_partition_t *ota_partition = esp_ota_get_next_update_partition(NULL);
     ZH_ERROR_CHECK(ota_partition != NULL, ESP_FAIL, NULL, "OTA get next update partition failed.");
-    esp_err_t err = esp_ota_begin(ota_partition, OTA_SIZE_UNKNOWN, &ota_handle);
-    ZH_ERROR_CHECK(err == ESP_OK, err, NULL, "OTA begin failed.");
+    ZH_ERROR_CHECK(esp_ota_begin(ota_partition, OTA_SIZE_UNKNOWN, &ota_handle) == ESP_OK, ESP_FAIL, NULL, "OTA begin failed.");
     while (remaining > 0)
     {
         int recv_len = httpd_req_recv(req, buf, MIN(remaining, sizeof(buf)));
@@ -78,23 +74,18 @@ esp_err_t _ota_ws_page_handler(httpd_req_t *req) // -V2008
         }
         else if (recv_len <= 0)
         {
-            err = httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Protocol Error");
-            ZH_ERROR_CHECK(err == ESP_OK, err, NULL, "HTTP server internal error.");
+            ZH_ERROR_CHECK(httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Protocol Error") == ESP_OK, ESP_FAIL, NULL, "HTTP server internal error.");
             return ESP_FAIL;
         }
-        err = esp_ota_write(ota_handle, (const void *)buf, recv_len);
-        ZH_ERROR_CHECK(err == ESP_OK, err, err = httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Flash error.");
-                       ZH_ERROR_CHECK(err == ESP_OK, err, NULL, "HTTP server internal error."), "OTA write failed.");
+        ZH_ERROR_CHECK(esp_ota_write(ota_handle, (const void *)buf, recv_len) == ESP_OK, ESP_FAIL,
+                       ZH_ERROR_CHECK(httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Flash error.") == ESP_OK, ESP_FAIL, NULL, "HTTP server internal error."), "OTA write failed.");
         remaining -= recv_len;
     }
-    err = esp_ota_end(ota_handle);
-    ZH_ERROR_CHECK(err == ESP_OK, err, err = httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Validation / Activation Error.");
-                   ZH_ERROR_CHECK(err == ESP_OK, err, NULL, "HTTP server internal error."), "OTA end failed.");
-    err = esp_ota_set_boot_partition(ota_partition);
-    ZH_ERROR_CHECK(err == ESP_OK, err, err = httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Validation / Activation Error.");
-                   ZH_ERROR_CHECK(err == ESP_OK, err, NULL, "HTTP server internal error."), "OTA set boot partition failed.");
-    err = httpd_resp_sendstr(req, "Firmware update complete, rebooting now!\n");
-    ZH_ERROR_CHECK(err == ESP_OK, err, NULL, "HTTP server internal error.");
+    ZH_ERROR_CHECK(esp_ota_end(ota_handle) == ESP_OK, ESP_FAIL,
+                   ZH_ERROR_CHECK(httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Validation / Activation Error.") == ESP_OK, ESP_FAIL, NULL, "HTTP server internal error."), "OTA end failed.");
+    ZH_ERROR_CHECK(esp_ota_set_boot_partition(ota_partition) == ESP_OK, ESP_FAIL,
+                   ZH_ERROR_CHECK(httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Validation / Activation Error.") == ESP_OK, ESP_FAIL, NULL, "HTTP server internal error."), "OTA set boot partition failed.");
+    ZH_ERROR_CHECK(httpd_resp_sendstr(req, "Firmware update complete, rebooting now!\n") == ESP_OK, ESP_FAIL, NULL, "HTTP server internal error.");
     vTaskDelay(500 / portTICK_PERIOD_MS);
     esp_restart();
     return ESP_OK;
