@@ -38,8 +38,8 @@ extern "C"
      * the URI path, and registers the HTTP GET (web interface) and HTTP POST
      * (firmware upload) handlers with the provided HTTP server instance.
      *
-     * @param[in] server HTTP server handle obtained from httpd_start().
-     * @param[in] path URI path for the OTA server (e.g., "/ota").
+     * @param[in] server HTTP server handle obtained from httpd_start() (must not be NULL)
+     * @param[in] path URI path for the OTA server (e.g., "/ota")
      *
      * @return ESP_OK on success
      * @return ESP_ERR_INVALID_ARG if invalid server handle or path

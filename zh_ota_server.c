@@ -23,7 +23,7 @@ static char *_ota_ws_path = "/zh_ota_server"; /*!< Fixed URI path for WebSocket-
  *
  * Serves the embedded HTML page for firmware upload via HTTP response.
  *
- * @param req HTTP request structure.
+ * @param req HTTP request structure
  *
  * @return ESP_OK on success
  * @return ESP_FAIL if failed to send the response
@@ -37,7 +37,7 @@ static esp_err_t _ota_page_handler(httpd_req_t *req);
  * available OTA partition, and activates it as the new boot partition.
  * The device reboots automatically after a successful update.
  *
- * @param req HTTP request containing the firmware binary payload.
+ * @param req HTTP request containing the firmware binary payload
  *
  * @return ESP_OK on success
  * @return ESP_FAIL if OTA operations or HTTP response failed
