@@ -84,7 +84,7 @@ esp_err_t _ota_page_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-esp_err_t _ota_ws_page_handler(httpd_req_t *req) // -V2008
+esp_err_t _ota_ws_page_handler(httpd_req_t *req)
 {
     char buf[1000] = {0};
     esp_ota_handle_t ota_handle = {0};
