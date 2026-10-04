@@ -1,5 +1,7 @@
 #include "zh_ota_server.h"
 
+static const char *TAG = "zh_ota_server";
+
 #define ZH_LOGI(msg, ...) ESP_LOGI(TAG, msg, ##__VA_ARGS__)
 #define ZH_LOGE(msg, err, ...) ESP_LOGE(TAG, "[%s:%d:%s] " msg, __FILE__, __LINE__, esp_err_to_name(err), ##__VA_ARGS__)
 
@@ -19,8 +21,6 @@
     }
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
-
-static const char *TAG = "zh_ota_server";
 
 static char *_ota_path = NULL;
 static const char *_ota_ws_path = "/zh_ota_server";
