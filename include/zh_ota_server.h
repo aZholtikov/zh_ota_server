@@ -22,9 +22,14 @@
 
 #pragma once
 
+#include "string.h"
 #include "esp_ota_ops.h"
 #include "esp_log.h"
 #include "esp_http_server.h"
+#include "esp_heap_caps.h"
+#include "esp_system.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -48,6 +53,7 @@ extern "C"
      *
      * @note The path string is copied internally and must not be freed
      *       by the caller.
+     *
      * @warning The memory allocated for the path is never freed.
      *          Call this function only once during application lifetime.
      */
