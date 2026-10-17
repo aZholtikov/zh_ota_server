@@ -8,7 +8,7 @@
 4. Automatic boot activation and device reboot after successful update.
 5. Chunked data reception with 1000-byte blocks for efficient memory usage.
 6. Seamless integration with ESP-IDF HTTP server and OTA APIs.
-7. Comprehensive error handling with detailed ESP_LOGE logging.
+7. Comprehensive error handling with detailed error reporting.
 8. Low memory footprint with minimal RAM consumption.
 
 ## Using
@@ -26,7 +26,16 @@ In the application, include the header:
 #include "zh_ota_server.h"
 ```
 
-## Example
+## Attention
+
+1. The firmware upload path is fixed to /zh_ota_server and cannot be changed.
+2. The zh_ota_server_init function must be called only once during application lifetime.
+3. Memory allocated for the URI path is never freed.
+4. Flashing an invalid firmware image may render the device unbootable.
+
+## Examples
+
+### Basic Example
 
 ```c
 #include "nvs_flash.h"
@@ -59,7 +68,17 @@ void app_main(void)
     esp_wifi_set_config(WIFI_IF_AP, &ap_config);
     esp_wifi_start();
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    httpd_start(&http_server_handle, &config);
-    zh_ota_server_init(http_server_handle, "/ota");
+    esp_err_t ret = httpd_start(&http_server_handle, &config);
+    if (ret != ESP_OK)
+    {
+        printf("HTTP server start error: %s\n", esp_err_to_name(ret));
+        return;
+    }
+    ret = zh_ota_server_init(http_server_handle, "/ota");
+    if (ret != ESP_OK)
+    {
+        printf("OTA server init error: %s\n", esp_err_to_name(ret));
+        return;
+    }
 }
 ```
